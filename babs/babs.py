@@ -2325,7 +2325,12 @@ class Container():
         count_inputs_bash = 0
         bash_file.write('\nsubid="$1"\n')
         count_inputs_bash += 1
-
+        
+        # Since xcp has a different naming convention for subid (raises error otherwise):
+        if 'xcp' in self.container_name:
+            bash_file.write('stripped_id=${subid#sub-}\n')
+        # Remove the sub- prefix from the subid
+        
         if type_session == "multi-ses":
             # also have the input of `sesid`:
             bash_file.write('sesid="$2"\n')
@@ -2415,7 +2420,12 @@ class Container():
             cmd_singularity_flags += '--bids-filter-file "${filterfile}"'  # <- TODO: test out!!
 
         cmd_singularity_flags += " \\" + "\n\t"
-        cmd_singularity_flags += '--participant-label "${subid}"'   # standard argument in BIDS App
+        
+        # add the participant label, small edit in case of xcp:
+        if 'xcp' in self.container_name:
+            cmd_singularity_flags += '--participant-label "${stripped_id}"'
+        else:
+            cmd_singularity_flags += '--participant-label "${subid}"'
 
         bash_file.write(cmd_singularity_flags)
         bash_file.write("\n\n")
